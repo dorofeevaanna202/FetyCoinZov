@@ -274,10 +274,9 @@ def play_coin(message):
         player['balance'] += win
         player['wins'] += 1
         save_players()
-        text = f"🪙 Монетка подброшена!\n\nРезультат: {'🦅 Орёл' if result == 'орёл' else '👑 Решка'}\nТвой выбор: {'🦅 Орёл' if player_choice == 'орёл' else '👑 Решка'}\n\n🎉 Ты выиграл! +{win:,} Hz⭐ ({multiplier}x)".replace(',', '.')
+        bot.send_message(message.chat.id, f"🪙 Результат: {'🦅 Орёл' if result == 'орёл' else '👑 Решка'}\n🎉 Ты выиграл! +{win:,} Hz⭐ ({multiplier}x)".replace(',', '.'))
     else:
-        text = f"🪙 Монетка подброшена!\n\nРезультат: {'🦅 Орёл' if result == 'орёл' else '👑 Решка'}\nТвой выбор: {'🦅 Орёл' if player_choice == 'орёл' else '👑 Решка'}\n\n❌ Ты проиграл! -{bet:,} Hz⭐".replace(',', '.')
-    bot.send_message(message.chat.id, text)
+        bot.send_message(message.chat.id, f"🪙 Результат: {'🦅 Орёл' if result == 'орёл' else '👑 Решка'}\n❌ Ты проиграл! -{bet:,} Hz⭐".replace(',', '.'))
 
 @bot.message_handler(func=lambda m: m.text and m.text.lower().startswith('hzкрашнуть'))
 def play_crash(message):
