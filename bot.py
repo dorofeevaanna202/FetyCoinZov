@@ -38,24 +38,11 @@ load_roulette_log()
 
 def get_player(user_id, username):
     if str(user_id) not in players:
-        players[str(user_id)] = {
-            'username': username,
-            'balance': 0,
-            'gtz': 0,
-            'games': 0,
-            'wins': 0,
-            'last_bonus': 0,
-            'last_gift': 0,
-            'exchange_state': None
-        }
+        players[str(user_id)] = {'username': username, 'balance': 0, 'gtz': 0, 'games': 0, 'wins': 0, 'last_bonus': 0, 'last_gift': 0, 'exchange_state': None}
         save_players()
     return players[str(user_id)]
 
-roulette_numbers = {
-    0: '🟢', 1: '🔴', 2: '⚫', 3: '🔴', 4: '⚫',
-    5: '🔴', 6: '⚫', 7: '🔴', 8: '⚫', 9: '🟡',
-    10: '⚫', 11: '🔴', 12: '⚫', 13: '🔴', 14: '⚫', 15: '🔴'
-}
+roulette_numbers = {0: '🟢', 1: '🔴', 2: '⚫', 3: '🔴', 4: '⚫', 5: '🔴', 6: '⚫', 7: '🔴', 8: '⚫', 9: '🟡', 10: '⚫', 11: '🔴', 12: '⚫', 13: '🔴', 14: '⚫', 15: '🔴'}
 
 @bot.message_handler(commands=['start'])
 def start(message):
@@ -73,10 +60,7 @@ def show_balance(message):
     user_id = message.from_user.id
     username = message.from_user.username or message.from_user.first_name
     player = get_player(user_id, username)
-    text = f"@{player['username']}\n"
-    text += f"🔥Баланс: {player['balance']:,} Hz⭐\n".replace(',', '.')
-    text += f"💎GtZ: {player['gtz']:,} 💎\n".replace(',', '.')
-    text += f"🎮Сыгранно игр: {player['games']}"
+    text = f"@{player['username']}\n🔥Баланс: {player['balance']:,} Hz⭐\n💎GtZ: {player['gtz']:,} 💎\n🎮Сыгранно игр: {player['games']}".replace(',', '.')
     bot.send_message(message.chat.id, text)
 
 @bot.message_handler(func=lambda m: m.text == "🏆 Топ" or m.text == "ТопHZ" or m.text == "топHZ")
@@ -290,15 +274,9 @@ def play_coin(message):
         player['balance'] += win
         player['wins'] += 1
         save_players()
-        text = f"🪙 Монетка подброшена!\n\n"
-        text += f"Результат: {'🦅 Орёл' if result == 'орёл' else '👑 Решка'}\n"
-        text += f"Твой выбор: {'🦅 Орёл' if player_choice == 'орёл' else '👑 Решка'}\n\n"
-        text += f"🎉 Ты выиграл! +{win:,} Hz⭐ ({multiplier}x)".replace(',', '.')
+        text = f"🪙 Монетка подброшена!\n\nРезультат: {'🦅 Орёл' if result == 'орёл' else '👑 Решка'}\nТвой выбор: {'🦅 Орёл' if player_choice == 'орёл' else '👑 Решка'}\n\n🎉 Ты выиграл! +{win:,} Hz⭐ ({multiplier}x)".replace(',', '.')
     else:
-        text = f"🪙 Монетка подброшена!\n\n"
-        text += f"Результат: {'🦅 Орёл' if result == 'орёл' else '👑 Решка'}\n"
-        text += f"Твой выбор: {'🦅 Орёл' if player_choice == 'орёл' else '👑 Решка'}\n\n"
-        text += f"❌ Ты проиграл! -{bet:,} Hz⭐".replace(',', '.')
+        text = f"🪙 Монетка подброшена!\n\nРезультат: {'🦅 Орёл' if result == 'орёл' else '👑 Решка'}\nТвой выбор: {'🦅 Орёл' if player_choice == 'орёл' else '👑 Решка'}\n\n❌ Ты проиграл! -{bet:,} Hz⭐".replace(',', '.')
     bot.send_message(message.chat.id, text)
 
 @bot.message_handler(func=lambda m: m.text and m.text.lower().startswith('hzкрашнуть'))
