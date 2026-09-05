@@ -20,21 +20,7 @@ def save_players():
     with open(DATA_FILE, 'w') as f:
         json.dump(players, f)
 
-def save_roulette_log():
-    with open('roulette_log.json', 'w') as f:
-        json.dump(roulette_log, f)
-
-def load_roulette_log():
-    global roulette_log
-    if os.path.exists('roulette_log.json'):
-        with open('roulette_log.json', 'r') as f:
-            roulette_log = json.load(f)
-    else:
-        roulette_log = []
-
 players = load_players()
-roulette_log = []
-load_roulette_log()
 
 def get_player(user_id, username):
     if str(user_id) not in players:
@@ -238,8 +224,8 @@ def process_exchange(message):
     player['balance'] += hz_amount
     player['exchange_state'] = None
     save_players()
-    bot.send_message(message.chat.id, f"✅Успешный обмен✅\nТы получил(а): {hz_amount:,} Hz⭐".replace(',', '.'))@bot.message_handler(func=lambda m: m.text and m.text.lower().startswith(('орёл', 'орел', 'решка')))
-def play_coin(message):
+    bot.send_message(message.chat.id, f"✅Успешный обмен✅\nТы получил(а): {hz_amount:,} Hz⭐".replace(',', '.'))@bot.message_handler(func=lambda m: m.text and (m.text.lower().startswith('орёл') or m.text.lower().startswith('орел') or m.text.lower().startswith('решка')))
+def coin_game(message):
     user_id = message.from_user.id
     username = message.from_user.username or message.from_user.first_name
     player = get_player(user_id, username)
@@ -248,11 +234,7 @@ def play_coin(message):
         bot.send_message(message.chat.id, "❌ Формат: орёл 200 / решка 500")
         return
     choice = parts[0]
-    try:
-        bet = int(parts[1])
-    except:
-        bot.send_message(message.chat.id, "❌ Неверная ставка!")
-        return
+    bet = int(parts[1]) if parts[1].isdigit() else 0
     if bet < 100:
         bot.send_message(message.chat.id, "❌ Минимальная ставка 100!")
         return
@@ -263,7 +245,7 @@ def play_coin(message):
     player['games'] += 1
     save_players()
     result = random.choice(['орёл', 'решка'])
-    if choice == 'орёл' or choice == 'орел':
+    if choice in ['орёл', 'орел']:
         multiplier = 1.7
         player_choice = 'орёл'
     else:
@@ -327,7 +309,7 @@ def play_crash(message):
         bot.send_message(message.chat.id, f"✅Ты выйграл⭐\n💎Твой выйграшь: {win:,} Hz⭐\n🎉Ракета улетела на {crash_point}🔥".replace(',', '.'))
 
 @bot.message_handler(func=lambda m: m.text and m.text.lower().startswith('рулеткаhz'))
-def play_roulette(message):
+def roulette_game(message):
     user_id = message.from_user.id
     username = message.from_user.username or message.from_user.first_name
     player = get_player(user_id, username)
@@ -335,12 +317,8 @@ def play_roulette(message):
     if len(parts) < 3:
         bot.send_message(message.chat.id, "❌ Формат: РулеткаHz (сумма) ч/к/ж/з")
         return
-    try:
-        bet = int(parts[1])
-        choice = parts[2].lower()
-    except:
-        bot.send_message(message.chat.id, "❌ Неверный формат!")
-        return
+    bet = int(parts[1]) if parts[1].isdigit() else 0
+    choice = parts[2].lower()
     if bet < 10:
         bot.send_message(message.chat.id, "❌ Минимальная ставка 10!")
         return
@@ -375,10 +353,6 @@ def play_roulette(message):
     else:
         result_num = random.choice([2, 4, 6, 8, 10, 12, 14])
     result_color = roulette_numbers[result_num]
-    roulette_log.append(f"{result_num}{result_color}")
-    if len(roulette_log) > 50:
-        roulette_log = roulette_log[-50:]
-    save_roulette_log()
     if result_color == player_color:
         win = int(bet * multiplier)
         player['balance'] += win
@@ -387,16 +361,6 @@ def play_roulette(message):
         bot.send_message(message.chat.id, f"Поздравляю ты выйграл(а)✅\nВыпал: {result_num}{result_color}\nСумма выйграша: {win:,} Hz⭐".replace(',', '.'))
     else:
         bot.send_message(message.chat.id, f"Ты пройграл(а)❌\nВыпал: {result_num}{result_color}\nСумма пройгрыша: {bet:,} Hz⭐".replace(',', '.'))
-
-@bot.message_handler(func=lambda m: m.text == "ЛогHz" or m.text == "логHz" or m.text == "Логhz")
-def show_roulette_log(message):
-    if not roulette_log:
-        bot.send_message(message.chat.id, "📋 ЛогРулетки пуст")
-        return
-    text = "📋 ЛогРулетки:\n"
-    for entry in roulette_log[-10:]:
-        text += entry + "\n"
-    bot.send_message(message.chat.id, text)
 
 @bot.message_handler(func=lambda m: m.text and m.text.lower().startswith('hzвыдать'))
 def transfer_hz(message):
