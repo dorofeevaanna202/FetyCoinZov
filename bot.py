@@ -254,8 +254,7 @@ def process_exchange(message):
     player['balance'] += hz_amount
     player['exchange_state'] = None
     save_players()
-    bot.send_message(message.chat.id, f"✅Успешный обмен✅\nТы получил(а): {hz_amount:,} Hz⭐".replace(',', '.'))
-    @bot.message_handler(func=lambda m: m.text and m.text.lower().startswith(('орёл', 'орел', 'решка')))
+    bot.send_message(message.chat.id, f"✅Успешный обмен✅\nТы получил(а): {hz_amount:,} Hz⭐".replace(',', '.'))@bot.message_handler(func=lambda m: m.text and m.text.lower().startswith(('орёл', 'орел', 'решка')))
 def play_coin(message):
     user_id = message.from_user.id
     username = message.from_user.username or message.from_user.first_name
