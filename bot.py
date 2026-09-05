@@ -28,8 +28,6 @@ def get_player(user_id, username):
         save_players()
     return players[str(user_id)]
 
-roulette_numbers = {0: '🟢', 1: '🔴', 2: '⚫', 3: '🔴', 4: '⚫', 5: '🔴', 6: '⚫', 7: '🔴', 8: '⚫', 9: '🟡', 10: '⚫', 11: '🔴', 12: '⚫', 13: '🔴', 14: '⚫', 15: '🔴'}
-
 @bot.message_handler(commands=['start'])
 def start(message):
     user_id = message.from_user.id
@@ -172,22 +170,14 @@ def show_games(message):
     text = """💎Все игры на данный момент🎁
 
 🎰РулеткаHz
-Чтобы играть тебе надо выбрать ⚫,🔴,🟡,🟢
-🟢 — Падает с шансом 0.50%‼️ (сумма выйграша х30)
-🟡 — Падает с шансом 5%❗ (сумма выйграша 5х)
-⚫ И 🔴 — падают с шансом 50% (сумма выйграша 2х)
 ч(⚫),к(🔴),ж(🟡),з(🟢)
-Пример:
-РулеткаHz 2000 ч
-РулеткаHz 5000 ж
+Пример: РулеткаHz 2000 ч
 
 🚀HzКрашнуть (сумма) (кофицент)
 Пример: HzКрашнуть 38844 1.21
 
 🪙Орёл или решка?
-Твоя цель выбрать правильную монетку.
 Пример: орёл 200 / решка 500
-Минимальная ставка 100 монет
 
 ❓Скоро новая игра"""
     bot.send_message(message.chat.id, text)
@@ -224,8 +214,19 @@ def process_exchange(message):
     player['balance'] += hz_amount
     player['exchange_state'] = None
     save_players()
-    bot.send_message(message.chat.id, f"✅Успешный обмен✅\nТы получил(а): {hz_amount:,} Hz⭐".replace(',', '.'))@bot.message_handler(func=lambda m: m.text and (m.text.lower().startswith('орёл') or m.text.lower().startswith('орел') or m.text.lower().startswith('решка')))
-def coin_game(message):
+    bot.send_message(message.chat.id, f"✅Успешный обмен✅\nТы получил(а): {hz_amount:,} Hz⭐".replace(',', '.'))@bot.message_handler(func=lambda m: m.text and m.text.lower().startswith('орёл'))
+def coin_game_orol(message):
+    play_coin_game(message, 'орёл')
+
+@bot.message_handler(func=lambda m: m.text and m.text.lower().startswith('орел'))
+def coin_game_orel(message):
+    play_coin_game(message, 'орёл')
+
+@bot.message_handler(func=lambda m: m.text and m.text.lower().startswith('решка'))
+def coin_game_reshka(message):
+    play_coin_game(message, 'решка')
+
+def play_coin_game(message, choice):
     user_id = message.from_user.id
     username = message.from_user.username or message.from_user.first_name
     player = get_player(user_id, username)
@@ -233,8 +234,11 @@ def coin_game(message):
     if len(parts) < 2:
         bot.send_message(message.chat.id, "❌ Формат: орёл 200 / решка 500")
         return
-    choice = parts[0]
-    bet = int(parts[1]) if parts[1].isdigit() else 0
+    try:
+        bet = int(parts[1])
+    except:
+        bot.send_message(message.chat.id, "❌ Неверная ставка!")
+        return
     if bet < 100:
         bot.send_message(message.chat.id, "❌ Минимальная ставка 100!")
         return
@@ -245,13 +249,11 @@ def coin_game(message):
     player['games'] += 1
     save_players()
     result = random.choice(['орёл', 'решка'])
-    if choice in ['орёл', 'орел']:
+    if choice == 'орёл':
         multiplier = 1.7
-        player_choice = 'орёл'
     else:
         multiplier = 1.5
-        player_choice = 'решка'
-    if result == player_choice:
+    if result == choice:
         win = int(bet * multiplier)
         player['balance'] += win
         player['wins'] += 1
@@ -309,7 +311,7 @@ def play_crash(message):
         bot.send_message(message.chat.id, f"✅Ты выйграл⭐\n💎Твой выйграшь: {win:,} Hz⭐\n🎉Ракета улетела на {crash_point}🔥".replace(',', '.'))
 
 @bot.message_handler(func=lambda m: m.text and m.text.lower().startswith('рулеткаhz'))
-def roulette_game(message):
+def roulette_game_new(message):
     user_id = message.from_user.id
     username = message.from_user.username or message.from_user.first_name
     player = get_player(user_id, username)
@@ -317,7 +319,11 @@ def roulette_game(message):
     if len(parts) < 3:
         bot.send_message(message.chat.id, "❌ Формат: РулеткаHz (сумма) ч/к/ж/з")
         return
-    bet = int(parts[1]) if parts[1].isdigit() else 0
+    try:
+        bet = int(parts[1])
+    except:
+        bot.send_message(message.chat.id, "❌ Неверная ставка!")
+        return
     choice = parts[2].lower()
     if bet < 10:
         bot.send_message(message.chat.id, "❌ Минимальная ставка 10!")
@@ -346,13 +352,16 @@ def roulette_game(message):
     rand = random.random()
     if rand < 0.005:
         result_num = 0
+        result_color = '🟢'
     elif rand < 0.055:
         result_num = 9
+        result_color = '🟡'
     elif rand < 0.525:
         result_num = random.choice([1, 3, 5, 7, 11, 13, 15])
+        result_color = '🔴'
     else:
         result_num = random.choice([2, 4, 6, 8, 10, 12, 14])
-    result_color = roulette_numbers[result_num]
+        result_color = '⚫'
     if result_color == player_color:
         win = int(bet * multiplier)
         player['balance'] += win
